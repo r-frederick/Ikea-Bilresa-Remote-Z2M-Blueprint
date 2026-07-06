@@ -32,12 +32,6 @@ blueprint:
             - {label: "Climate Temperature", value: climate}
             
     # --- SCALED STEP SIZES ---
-    step_brightness:
-      name: Brightness Step Percentage
-      description: "Percentage change per click (1-100)."
-      default: 10
-      selector:
-        number: {min: 1, max: 100, step: 1, unit_of_measurement: "%"}
     step_temp:
       name: Colour Temp Step
       description: "Mireds to shift per click (e.g., 20). Lower is smoother."
@@ -108,7 +102,6 @@ variables:
   target_entity: !input controlled_entity
   mode: !input control_mode
   # Map inputs to internal variables
-  s_bright: !input step_brightness
   s_temp: !input step_temp
   s_color: !input step_color
   s_media: !input step_media
@@ -197,17 +190,18 @@ action:
                                   {% if delta > 0 or new_val >= 255 %} 1
                                   {% elif delta < 0 or new_val <= 1 %} -1
                                   {% else %} 0 {% endif %}
+                                mapped_brightness: "{{ [((new_val | int) / 255 * 100) | round | int, 1] | max }}"
 
                             - if:
                                 - condition: template
-                                  value_template: "{{ direction != 0 }}"
+                                  value_template: "{{ direction != 0 or mode == 'light_brightness' }}"
                               then:
                                 - choose:
                                     - conditions: "{{ mode == 'light_brightness' }}"
                                       sequence:
                                         - service: light.turn_on
                                           target: { entity_id: !input controlled_entity }
-                                          data: { brightness_step_pct: "{{ s_bright * direction }}", transition: 0.1 }
+                                          data: { brightness_pct: "{{ mapped_brightness }}", transition: 0.1 }
                                     - conditions: "{{ mode == 'light_temp' }}"
                                       sequence:
                                         - service: light.turn_on
