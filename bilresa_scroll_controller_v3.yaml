@@ -129,7 +129,7 @@ action:
         sequence:
           - variables:
               # HANDLE INITIAL NULL/1
-              start_val: "{{ 255 if trigger.payload_json.brightness is none else trigger.payload_json.brightness | int }}"
+              start_val: "{{ 255 if trigger.payload_json.action_level is none else trigger.payload_json.action_level | int }}"
               new_action: "brightness_move_to_level"
 
           - repeat:
@@ -190,7 +190,7 @@ action:
                           sequence:
                             - variables:
                                 # HANDLE LIMIT NULL/1
-                                raw_val: "{{ wait.trigger.payload_json.brightness }}"
+                                raw_val: "{{ wait.trigger.payload_json.action_level }}"
                                 new_val: "{{ 255 if raw_val is none else raw_val | int }}"
                                 direction: >
                                   {% set delta = (new_val | int) - (start_val | int) %}
